@@ -1,5 +1,5 @@
 {
-  "name": "odin-merge-sort",
+  "name": "odin-knights-travails",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/agentjesse/odin-merge-sort.git"
+    "url": "git+https://github.com/agentjesse/odin-knights-travails.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/agentjesse/odin-merge-sort/issues"
+    "url": "https://github.com/agentjesse/odin-knights-travails/issues"
   },
-  "homepage": "https://github.com/agentjesse/odin-merge-sort#readme",
+  "homepage": "https://github.com/agentjesse/odin-knights-travails#readme",
   "devDependencies": {
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
