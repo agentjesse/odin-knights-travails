@@ -12,13 +12,12 @@ import makeQueue from './queue.js';
 //fn to make a tree node. each node represents a valid knight move with the coordinates it has reached at the current depth (path length) and it's parent move node.
 const treeNode = (coords, parent = null, children = [])=> ({ coords, parent, children });
 
-//set of board coordinates w/ generated moves. check to prevent regenerating moves.
-const doneGenerationCoords = new Set();
+//set of board coordinate strings already added to the tree graph for move generation
+const visitedCoordsSet = new Set();
 
-//todo: fn to calculate up to 8 valid knight moves from a given coordinate.
-//it needs to reference a free variable holding moves that have already been generated to not return them. it also needs to handle edge cases like out of bounds coordinates.
+//fn to calculate up to 8 valid knight moves from current coordinate. pass in a parent node for the current coordinate to get an array of valid move nodes.
 const validKnightMoves = (parentMoveNode) => {
-  const validMoves = [];
+  const validMoveNodes = [];
   const startX = parentMoveNode.coords[0]; //extract for clarity
   const startY = parentMoveNode.coords[1];
   //need to loop over two arrays of 8 x/y move offsets. offsetorder is cw from top
@@ -29,10 +28,13 @@ const validKnightMoves = (parentMoveNode) => {
     const endX = startX + xOffsets[i];
     const endY = startY + yOffsets[i];
     if (endX < 8 && endX > -1 && endY < 8 && endY > -1) {
-      validMoves.push( [endX, endY] );
+      //only make unique move nodes by checking visitedCoordsSet
+      if ( !visitedCoordsSet.has( [endX, endY].join('') ) ) {
+        validMoveNodes.push( treeNode([endX, endY], parentMoveNode) );
+      }
     }
   }
-  return validMoves;
+  return validMoveNodes;
 };
 
 //fn to make tree of valid knight moves from a given coordinate.
