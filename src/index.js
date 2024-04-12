@@ -1,7 +1,4 @@
 /* Next task:
-- make fns/factories from pseudocode:
--validKnight moves needs valid move generation logic. must handle edge cases like out of bounds coordinates. Also needs optimization such as not regenerating knight moves if they have already been generated, which is possible by storing the knight moves in a js set object.
-
 -look for more optimizations, this implementation uses implicit DFS during creation of the tree which uses a lot of memory but is clear.
 */
 
@@ -15,7 +12,9 @@ const treeNode = (coords, parent = null, children = [])=> ({ coords, parent, chi
 //set of board coordinate strings already added to the tree graph for move generation
 const visitedCoordsSet = new Set();
 
-//fn to calculate up to 8 valid knight moves from current coordinate. pass in a parent node for the current coordinate to get an array of valid move nodes.
+//fn to calculate up to 8 valid knight moves from current coordinate. pass in a parent
+//node for the current coordinate to get an array of valid move nodes. also sets child
+//move nodes to the parent
 const validKnightMoves = (parentMoveNode) => {
   const validMoveNodes = [];
   const startX = parentMoveNode.coords[0]; //extract for clarity
@@ -30,55 +29,71 @@ const validKnightMoves = (parentMoveNode) => {
     if (endX < 8 && endX > -1 && endY < 8 && endY > -1) {
       //only make unique move nodes by checking visitedCoordsSet
       if ( !visitedCoordsSet.has( [endX, endY].join('') ) ) {
-        validMoveNodes.push( treeNode([endX, endY], parentMoveNode) );
+        const childMoveNode = treeNode([endX, endY], parentMoveNode);
+        validMoveNodes.push( childMoveNode );
       }
+      //set valid move nodes as children of parent
+      parentMoveNode.children = validMoveNodes;
     }
   }
   return validMoveNodes;
 };
 
-//fn to make tree of valid knight moves from a given coordinate.
-const constructTree = (startCoords, endCoords)=> {
-  //logic to build out tree in level loops using a queue, while checking if the endCoords
-  //has been reached to stop tree construction.
-  const depth0Node = treeNode(startCoords); //makes node: {coords:[0,0], parent:null}
+//fn to make tree of valid knight moves from a given coordinate and return the first
+//movement node matching the end coordinates. Nodes are added by depth level and checked,
+//which means the first matching node reveals a shortest path.
+const makeTreeForEndNode = (startCoords, endCoords)=> {
+  //build out tree in depth level loops using a queue, while checking if a move with the
+  //end coordinates has been found to stop tree construction.
+  //example movement node: {coords:[0,0], parent:null, chldren: null}
+  const depth0Node = treeNode(startCoords);
   //make a queue with tree root
   const addNodesByLevelQueue = makeQueue();
   addNodesByLevelQueue.enqueue(depth0Node);
-  lg(`tree:\n ${ots(depth0Node)}`); //view tree
+  // lg(`tree:\n ${ots(depth0Node)}`); //view tree
   let currentMoveNode; //used to expose current move coordinates and children []
   while ( addNodesByLevelQueue.getSize() ) { // if queue occupied:
     currentMoveNode = addNodesByLevelQueue.dequeue();
     // Generate valid knight move nodes arr from current move node
-    validKnightMoves(currentMoveNode).forEach( (childMove)=> {
-      //check if node has endCoords
-      if ( childMove.coords[0] === endCoords[0] && childMove.coords[1] === endCoords[1]) {
-        //todo: childMove node with end coordinates found, trigger loop termination...
-        
-        return childMove;
-      }
-      addNodesByLevelQueue.enqueue(childMove);//enqueue moves we don't care about
-    } );
-
+    const validKnightMovesArr = validKnightMoves(currentMoveNode);
+    // eslint-disable-next-line no-restricted-syntax
+    for ( const childMove of validKnightMovesArr ) {
+      //check to return node with coords matching endCoords
+      if ( childMove.coords[0] === endCoords[0]
+        && childMove.coords[1] === endCoords[1] ) return childMove;
+      addNodesByLevelQueue.enqueue(childMove);//enqueue non-matching moves
+    }
   }
-  //this point in code means endCoordinate not reached. Currently I think this never
-  //happens since knights can eventually visit every square on an empty board
+  //this point in code means endCoordinate not reached. Knights can eventually visit every square on an EMPTY board, so this might only be reached if there is an error currently.
   return null;
 };
 
-//todo: fn to construct a path of moves from a given tree node by following it's parent chain of moves to the root node and reversing the order.
-const getReversedPath = (endNode)=> {
+//fn to construct a path of moves from a movement node by following it's parent
+//chain to the level 0 node
+const pathToEndCoords = (node)=> {
   const path = [];
-  //logic to add moves to path
-
-  return path;
+  //add move coordinates to path array
+  while (node) { //traversal stops at level 0 node
+    path.push( node.coords );
+    node = node.parent;
+  }
+  return `Shortest Path: ${ path.toReversed().join(' -> ')}`;
 };
 
-//todo: knightMoves driver script.
-//make tree of valid moves with constructTree. It returns an end coordinate node made with implicit DFS and has a parents following the shortest path from start to end coordinates. pass the end coordinate node into getReversedPath to get the shortest path and log it.
+//shortestKnightMoves driver script
+//use makeTreeForEndNode fn to build a tree of valid moves and return a node with
+//the end coordinate if found. The node can reveal a shortest path as a string when it
+//is passed into pathToEndCoords.
 const shortestKnightMoves = (startCoords, endCoords)=> {
-  const endCoordsNode = constructTree(startCoords, endCoords);
-  if (endCoordsNode) return getReversedPath(endCoordsNode);
-  return 'No valid path found.'; //default return when no valid path found
+  //handle out of bounds start or end coordinates
+  const [startX, startY] = startCoords; const [endX, endY] = endCoords;
+  if (startX < 8 && startX > -1 && startY < 8 && startY > -1
+    && endX < 8 && endX > -1 && endY < 8 && endY > -1) {
+    const endCoordsNode = makeTreeForEndNode(startCoords, endCoords);
+    if (endCoordsNode) return pathToEndCoords(endCoordsNode);
+    return 'No valid path found.'; //default return when no valid path found
+  }
+  return 'out of bounds start or end coordinates';
 };
-lg( shortestKnightMoves([0, 0], [1, 2]) ); //should return [[0,0],[1,2]]
+// lg( shortestKnightMoves([3, 3], [4, 3]) ); //should return [3,3] [4,5] [6,4] [4,3]
+lg( shortestKnightMoves([0, 0], [7, 7]) ); //should return [3,3] [4,5] [6,4] [4,3]
