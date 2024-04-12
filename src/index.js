@@ -10,39 +10,47 @@ import { logToConsole as lg, objectToString as ots } from './logger.js'; //short
 import makeQueue from './queue.js';
 
 //fn to make a tree node. each node represents a valid knight move with the coordinates it has reached at the current depth (path length) and it's parent move node.
-const treeNode = (coords, parent = null, kids = [])=> ( { coords, parent, kids } );
+const treeNode = (coords, parent = null, children = [])=> ({ coords, parent, children });
 
 //set of board coordinates w/ generated moves. check to prevent regenerating moves.
-const generatedCoords = new Set();
+const doneGenerationCoords = new Set();
 
 //todo: fn to calculate up to 8 valid knight moves from a given coordinate.
 //it needs to reference a free variable holding moves that have already been generated to not return them. it also needs to handle edge cases like out of bounds coordinates.
-const validKnightMoves = (coords) => {
-  let moves = [];
+const validKnightMoves = (parentMoveNode) => {
+  const moves = [];
+  //extract data from parent move node to make each child move node
+  
 
   return moves;
 };
 
-//todo: fn to make tree of valid knight moves from a given coordinate.
-const constructTree = (startCoord, endCoord)=> {
-  //logic to build out tree in level loops using a queue, while checking if the endCoord has been reached to indicate stopping. validKnightMoves will be used to generate valid knight moves.
-  let depth0Node = treeNode(startCoord); //makes node: {coords:[0,0], parent:null}
+//fn to make tree of valid knight moves from a given coordinate.
+const constructTree = (startCoords, endCoords)=> {
+  //logic to build out tree in level loops using a queue, while checking if the endCoords 
+  //has been reached to stop tree construction.
+  const depth0Node = treeNode(startCoords); //makes node: {coords:[0,0], parent:null}
   //make a queue with tree root
   const addNodesByLevelQueue = makeQueue();
   addNodesByLevelQueue.enqueue(depth0Node);
   lg(`tree:\n ${ots(depth0Node)}`); //view tree
-  let currentNode;
-  while ( addNodesByLevelQueue.getSize() ) { // while queue occupied:
-    currentNode = addNodesByLevelQueue.dequeue();
+  let currentMoveNode; //used to expose current move coordinates and children []
+  while ( addNodesByLevelQueue.getSize() ) { // if queue occupied:
+    currentMoveNode = addNodesByLevelQueue.dequeue();
+    // Generate valid knight move nodes arr from current move node
+    validKnightMoves(currentMoveNode).forEach( (childMove)=> {
+      //check if node has endCoords
+      if ( childMove.coords[0] === endCoords[0] && childMove.coords[1] === endCoords[1]) {
+        //todo: childMove node with end coordinates found, trigger loop termination...
+        
+        return childMove;
+      }
+      addNodesByLevelQueue.enqueue(childMove);//enqueue moves we don't care about
+    } );
 
   }
-  // Generate valid knight moves from current coordinates and loop over them:
-  // for move of validKnightMoves(currentNode.coordinates):
-  //   if move == end: RETURN currentNode
-  //   childNode = treeNode(move, parent=currentNode)
-  //   enqueue childNode
-
-  //if endCoordinate is not reached, return null. I thin this should never happen as knights can visit every square on an empty board.
+  //this point in code means endCoordinate not reached. Currently I think this never
+  //happens since knights can eventually visit every square on an empty board
   return null;
 };
 
@@ -56,9 +64,9 @@ const getReversedPath = (endNode)=> {
 
 //todo: knightMoves driver script.
 //make tree of valid moves with constructTree. It returns an end coordinate node made with implicit DFS and has a parents following the shortest path from start to end coordinates. pass the end coordinate node into getReversedPath to get the shortest path and log it.
-const shortestKnightMoves = (startCoord, endCoord)=> {
-  const endCoordNode = constructTree(startCoord, endCoord);
-  if (endCoordNode) return getReversedPath(endCoordNode);
+const shortestKnightMoves = (startCoords, endCoords)=> {
+  const endCoordsNode = constructTree(startCoords, endCoords);
+  if (endCoordsNode) return getReversedPath(endCoordsNode);
   return 'No valid path found.'; //default return when no valid path found
 };
 lg( shortestKnightMoves([0, 0], [1, 2]) ); //should return [[0,0],[1,2]]
