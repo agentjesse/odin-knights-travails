@@ -14,7 +14,7 @@ const visitedCoordsSet = new Set();
 
 //fn to calculate up to 8 valid knight moves from current coordinate. pass in a parent
 //node for the current coordinate to get an array of valid move nodes. also sets child
-//move nodes to the parent
+//move nodes to the parent in one shot after the loop is done.
 const validKnightMoves = (parentMoveNode) => {
   const validMoveNodes = [];
   const startX = parentMoveNode.coords[0]; //extract for clarity
@@ -48,12 +48,12 @@ const makeTreeForEndNode = (startCoords, endCoords)=> {
   //example movement node: {coords:[0,0], parent:null, chldren: null}
   const depth0Node = treeNode(startCoords);
   //make a queue with tree root
-  const addNodesByLevelQueue = makeQueue();
-  addNodesByLevelQueue.enqueue(depth0Node);
+  const addNodesQueue = makeQueue();
+  addNodesQueue.enqueue(depth0Node);
   // lg(`tree:\n ${ots(depth0Node)}`); //view tree
   let currentMoveNode; //used to expose current move coordinates and children []
-  while ( addNodesByLevelQueue.getSize() ) { // if queue occupied:
-    currentMoveNode = addNodesByLevelQueue.dequeue();
+  while ( addNodesQueue.getSize() ) { // if queue occupied:
+    currentMoveNode = addNodesQueue.dequeue();
     // Generate valid knight move nodes arr from current move node
     const validKnightMovesArr = validKnightMoves(currentMoveNode);
     // eslint-disable-next-line no-restricted-syntax
@@ -61,7 +61,7 @@ const makeTreeForEndNode = (startCoords, endCoords)=> {
       //check to return node with coords matching endCoords
       if ( childMove.coords[0] === endCoords[0]
         && childMove.coords[1] === endCoords[1] ) return childMove;
-      addNodesByLevelQueue.enqueue(childMove);//enqueue non-matching moves
+      addNodesQueue.enqueue(childMove);//enqueue non-matching moves
     }
   }
   //this point in code means endCoordinate not reached. Knights can eventually visit every square on an EMPTY board, so this might only be reached if there is an error currently.
@@ -80,11 +80,21 @@ const pathToEndCoords = (node)=> {
   return `Shortest Path: ${ path.toReversed().join(' -> ')}`;
 };
 
+//input coordinate validation fn, checks type, length, and numeric values
+const isValidCoord = (coord)=> ( Array.isArray(coord)
+  && coord.length === 2
+  && typeof coord[0] === 'number'
+  && typeof coord[1] === 'number' );
+
 //fn to get shortest knight moves from a given start coordinate and end coordinate.
 //uses makeTreeForEndNode fn to build a tree of valid moves and return a node with
 //the end coordinate if found. The node can reveal a shortest path as a string when it
 //is passed into pathToEndCoords.
 const shortestKnightMoves = (startCoords, endCoords)=> {
+  //check if startCoords and endCoords are valid
+  if (!isValidCoord(startCoords) || !isValidCoord(endCoords)) {
+    return 'please provide valid array coordinates with two numeric values';
+  }
   //handle out of bounds start or end coordinates
   const [startX, startY] = startCoords; const [endX, endY] = endCoords;
   if (startX < 8 && startX > -1 && startY < 8 && startY > -1
