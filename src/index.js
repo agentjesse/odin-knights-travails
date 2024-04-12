@@ -18,16 +18,26 @@ const doneGenerationCoords = new Set();
 //todo: fn to calculate up to 8 valid knight moves from a given coordinate.
 //it needs to reference a free variable holding moves that have already been generated to not return them. it also needs to handle edge cases like out of bounds coordinates.
 const validKnightMoves = (parentMoveNode) => {
-  const moves = [];
-  //extract data from parent move node to make each child move node
-  
-
-  return moves;
+  const validMoves = [];
+  const startX = parentMoveNode.coords[0]; //extract for clarity
+  const startY = parentMoveNode.coords[1];
+  //need to loop over two arrays of 8 x/y move offsets. offsetorder is cw from top
+  const xOffsets = [1, 2, 2, 1, -1, -2, -2, -1];
+  const yOffsets = [2, 1, -1, -2, -2, -1, 1, 2];
+  for ( let i = 0; i < 8; i++ ) { //8 operation/move creation loop
+    //calculate new move coordinates from offsets, add in bounds moves
+    const endX = startX + xOffsets[i];
+    const endY = startY + yOffsets[i];
+    if (endX < 8 && endX > -1 && endY < 8 && endY > -1) {
+      validMoves.push( [endX, endY] );
+    }
+  }
+  return validMoves;
 };
 
 //fn to make tree of valid knight moves from a given coordinate.
 const constructTree = (startCoords, endCoords)=> {
-  //logic to build out tree in level loops using a queue, while checking if the endCoords 
+  //logic to build out tree in level loops using a queue, while checking if the endCoords
   //has been reached to stop tree construction.
   const depth0Node = treeNode(startCoords); //makes node: {coords:[0,0], parent:null}
   //make a queue with tree root
