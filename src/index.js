@@ -7,12 +7,12 @@
 
 //For Node.js, when importing local modules, include the file extension in the import statement.
 import { logToConsole as lg, objectToString as ots } from './logger.js'; //shorthand loggers
+import makeQueue from './queue.js';
 
-//fn to make a tree node. each node represents a valid knight move with the coordinates it has reached and it's parent movement node.
-const treeNode = (coords, parent = null)=> ( { coords, parent } );
-// lg( treeNode([0, 0]) ); //debug
+//fn to make a tree node. each node represents a valid knight move with the coordinates it has reached at the current depth (path length) and it's parent move node.
+const treeNode = (coords, parent = null, kids = [])=> ( { coords, parent, kids } );
 
-//set of coordinates for moves that have already been generated. use it to prevent regenerating moves.
+//set of board coordinates w/ generated moves. check to prevent regenerating moves.
 const generatedCoords = new Set();
 
 //todo: fn to calculate up to 8 valid knight moves from a given coordinate.
@@ -25,11 +25,17 @@ const validKnightMoves = (coords) => {
 
 //todo: fn to make tree of valid knight moves from a given coordinate.
 const constructTree = (startCoord, endCoord)=> {
-  //logic to build out tree in loops, while checking if the endCoord has been reached. validKnightMoves will be used to generate valid knight moves.
-  let depth0Node = treeNode(startCoord);
-  //make a queue
-  // while queue occupied:
-  // currentNode = dequeue a node
+  //logic to build out tree in level loops using a queue, while checking if the endCoord has been reached to indicate stopping. validKnightMoves will be used to generate valid knight moves.
+  let depth0Node = treeNode(startCoord); //makes node: {coords:[0,0], parent:null}
+  //make a queue with tree root
+  const addNodesByLevelQueue = makeQueue();
+  addNodesByLevelQueue.enqueue(depth0Node);
+  lg(`tree:\n ${ots(depth0Node)}`); //view tree
+  let currentNode;
+  while ( addNodesByLevelQueue.getSize() ) { // while queue occupied:
+    currentNode = addNodesByLevelQueue.dequeue();
+
+  }
   // Generate valid knight moves from current coordinates and loop over them:
   // for move of validKnightMoves(currentNode.coordinates):
   //   if move == end: RETURN currentNode
@@ -53,6 +59,6 @@ const getReversedPath = (endNode)=> {
 const shortestKnightMoves = (startCoord, endCoord)=> {
   const endCoordNode = constructTree(startCoord, endCoord);
   if (endCoordNode) return getReversedPath(endCoordNode);
-  return 'No valid path found.';
+  return 'No valid path found.'; //default return when no valid path found
 };
 lg( shortestKnightMoves([0, 0], [1, 2]) ); //should return [[0,0],[1,2]]
