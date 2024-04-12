@@ -1,5 +1,8 @@
 /* Next task:
 -look for more optimizations, this implementation uses implicit DFS during creation of the tree which uses a lot of memory but is clear.
+
+-Optional tasks:
+Implement bidirectional search: start simultaneously from both the knight's initial position and the target position, searching for a path until they meet.
 */
 
 //For Node.js, when importing local modules, include the file extension in the import statement.
