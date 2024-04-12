@@ -80,8 +80,8 @@ const pathToEndCoords = (node)=> {
   return `Shortest Path: ${ path.toReversed().join(' -> ')}`;
 };
 
-//shortestKnightMoves driver script
-//use makeTreeForEndNode fn to build a tree of valid moves and return a node with
+//fn to get shortest knight moves from a given start coordinate and end coordinate.
+//uses makeTreeForEndNode fn to build a tree of valid moves and return a node with
 //the end coordinate if found. The node can reveal a shortest path as a string when it
 //is passed into pathToEndCoords.
 const shortestKnightMoves = (startCoords, endCoords)=> {
@@ -95,5 +95,9 @@ const shortestKnightMoves = (startCoords, endCoords)=> {
   }
   return 'out of bounds start or end coordinates';
 };
-// lg( shortestKnightMoves([3, 3], [4, 3]) ); //should return [3,3] [4,5] [6,4] [4,3]
-lg( shortestKnightMoves([0, 0], [7, 7]) ); //should return [3,3] [4,5] [6,4] [4,3]
+
+//----------TESTING
+//below returns: Shortest Path: 3,3 -> 4,5 -> 6,4 -> 4,3
+lg( shortestKnightMoves([3, 3], [4, 3]) );
+//below returns: Shortest Path: 0,0 -> 1,2 -> 2,4 -> 3,6 -> 5,7 -> 6,5 -> 7,7
+// lg( shortestKnightMoves([0, 0], [7, 7]) );
